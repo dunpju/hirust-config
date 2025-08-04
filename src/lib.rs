@@ -21,7 +21,7 @@ mod tests {
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
-        let version = get::<bool>("VERSION".to_string());
+        let version = get::<bool>("app.VERSION".to_string());
         println!("{:?}", version);
     }
 }
@@ -36,6 +36,8 @@ pub fn load_config(config_dir: String) {
         // 检查扩展名是否为".yaml"
         if file_path.is_file() && extension == Some("yaml") {
             println!("{:?}", file_path);
+            let file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap();
+            let file_name = file_name.replace(".yaml", "");
             let yaml_content =
                 fs::read_to_string(file_path).expect(format!("读取{:?}失败", file_path).as_str());
 
@@ -46,12 +48,12 @@ pub fn load_config(config_dir: String) {
             CONFIG_COLLECT
                 .lock()
                 .unwrap()
-                .insert(String::from(file_path.clone().to_str()), deserialized_map.clone());
+                .insert(String::from(file_name), deserialized_map.clone());
         }
     }
 }
 
-type PrintFn = fn(key: &String, value: &serde_yml::Value);
+type PrintFn = fn(key: &String, value: &BTreeMap<String, serde_yml::Value>);
 
 #[allow(unused)]
 pub fn print(f: PrintFn) {
@@ -62,6 +64,33 @@ pub fn print(f: PrintFn) {
 
 #[allow(unused)]
 pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
-    let value: Option<serde_yml::Value> = CONFIG_COLLECT.lock().unwrap().get(&key).cloned();
-    value.and_then(|v| T::deserialize(v).ok())
+    if key.contains(".") {
+        let keys = key.split(".").collect::<Vec<&str>>();
+        let mut config_collect: Mutex<BTreeMap<String, serde_yml::Value>> =
+            Mutex::new(BTreeMap::new());
+        let mut i = 0;
+        for key in keys {
+            println!("{:?}: {:?}", &key, i);
+            if i == 0 {
+                config_collect = Mutex::new(CONFIG_COLLECT.lock().unwrap().get(&key.to_string()).cloned().unwrap());
+            } else {
+                let value: Option<serde_yml::Value> =
+                    config_collect.lock().unwrap().get(&key.to_string()).cloned();
+                let value_clone = value.clone();
+                if let Some(vv) = value {
+                    if vv.is_mapping() {
+
+                    } else {
+                        return value_clone.and_then(|v| T::deserialize(v).ok());
+                    }
+                } else {
+                    return None;
+                }
+            }
+            i += 1;
+        }
+        None
+    } else {
+        None
+    }
 }
