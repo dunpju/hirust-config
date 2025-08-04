@@ -77,6 +77,7 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
                 let value: Option<serde_yml::Value> =
                     config_collect.lock().unwrap().get(&key.to_string()).cloned();
                 let value_clone = value.clone();
+                println!("value_clone {:?}", &value_clone);
                 if let Some(vv) = value {
                     if vv.is_mapping() {
 
