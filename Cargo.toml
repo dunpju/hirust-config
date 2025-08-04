@@ -1,0 +1,13 @@
+[package]
+name = "hirust-config"
+authors = ["dengpju"]
+version = "0.1.0"
+edition = "2024"
+description = "A Rust Config"
+license = "MIT"
+
+[dependencies]
+walkdir = "2.5.0"
+serde_yml = "0.0.12"
+serde = { version = "1.0.219", features = ["derive"] }
+lazy_static = "1.5.0"
