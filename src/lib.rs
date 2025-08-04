@@ -21,7 +21,7 @@ mod tests {
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
-        let version = get::<bool>("app.VERSION".to_string());
+        let version = get::<String>("app.SSL".to_string());
         println!("{:?}", version);
     }
 }
@@ -72,15 +72,30 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
         for key in keys {
             println!("{:?}: {:?}", &key, i);
             if i == 0 {
-                config_collect = Mutex::new(CONFIG_COLLECT.lock().unwrap().get(&key.to_string()).cloned().unwrap());
+                config_collect = Mutex::new(
+                    CONFIG_COLLECT
+                        .lock()
+                        .unwrap()
+                        .get(&key.to_string())
+                        .cloned()
+                        .unwrap(),
+                );
             } else {
-                let value: Option<serde_yml::Value> =
-                    config_collect.lock().unwrap().get(&key.to_string()).cloned();
+                let value: Option<serde_yml::Value> = config_collect
+                    .lock()
+                    .unwrap()
+                    .get(&key.to_string())
+                    .cloned();
                 let value_clone = value.clone();
                 println!("value_clone {:?}", &value_clone);
                 if let Some(vv) = value {
                     if vv.is_mapping() {
+                        match vv.as_mapping() {
+                            Some(m) => {
 
+                            }
+                            None => return None,
+                        }
                     } else {
                         return value_clone.and_then(|v| T::deserialize(v).ok());
                     }
