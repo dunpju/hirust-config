@@ -21,7 +21,7 @@ mod tests {
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
-        let version = get::<String>("app.SSL".to_string());
+        let version = get::<String>("app.SSL.OUT".to_string());
         println!("{:?}", version);
     }
 }
@@ -68,6 +68,8 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
         let keys = key.split(".").collect::<Vec<&str>>();
         let mut config_collect: Mutex<BTreeMap<String, serde_yml::Value>> =
             Mutex::new(BTreeMap::new());
+        let mut value: Option<serde_yml::Value> = None;
+        let mut mapping: Option<serde_yml::Mapping> = None;
         let mut i = 0;
         for key in keys {
             println!("{:?}: {:?}", &key, i);
@@ -80,24 +82,50 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
                         .cloned()
                         .unwrap(),
                 );
+            } else if let Some(m) = &mapping {
+                value = m.get(&key.to_string()).cloned();
+                println!("{} value {:?}", line!(), &value);
+                if value.is_some() {
+                    if value.clone().unwrap().is_mapping() {
+                        mapping = value.clone().unwrap().as_mapping().cloned();
+                    } else {
+                        mapping = None;
+                        return value.and_then(|v| T::deserialize(v).ok());
+                    }
+                } else {
+                    mapping = None;
+                    return value.and_then(|v| T::deserialize(v).ok());
+                }
+            } else if let Some(vv) = value.clone() {
+                if vv.is_mapping() {
+                    match vv.as_mapping() {
+                        Some(m) => {
+                            mapping = Some(m.clone());
+                            value = None;
+                        }
+                        None => return None,
+                    }
+                } else {
+                    return value.and_then(|v| T::deserialize(v).ok());
+                }
             } else {
-                let value: Option<serde_yml::Value> = config_collect
+                value = config_collect
                     .lock()
                     .unwrap()
                     .get(&key.to_string())
                     .cloned();
-                let value_clone = value.clone();
-                println!("value_clone {:?}", &value_clone);
-                if let Some(vv) = value {
+                println!("{} value {:?}", line!(), &value);
+                if let Some(vv) = value.clone() {
                     if vv.is_mapping() {
                         match vv.as_mapping() {
                             Some(m) => {
-
+                                mapping = Some(m.clone());
+                                value = None;
                             }
                             None => return None,
                         }
                     } else {
-                        return value_clone.and_then(|v| T::deserialize(v).ok());
+                        return value.and_then(|v| T::deserialize(v).ok());
                     }
                 } else {
                     return None;
