@@ -84,7 +84,6 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
         let mut temp_keys: Vec<String> = vec![];
 
         for key in keys {
-            println!("{} {:?}", line!(), &key);
             result = None;
 
             temp_keys.push(key.to_string());
@@ -96,7 +95,6 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
             } else {
                 if let Some(m) = &mapping {
                     value = m.get(&key.to_string()).cloned();
-                    println!("{} value {:?}", line!(), &value);
                     if value.is_some() {
                         if value.clone().unwrap().is_mapping() {
                             mapping = value.clone().unwrap().as_mapping().cloned();
@@ -123,7 +121,6 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
                     }
                 } else {
                     value = config_collect.clone().unwrap().get(&key.to_string()).cloned();
-                    println!("{} value {:?}", line!(), &value);
                     if let Some(vv) = value.clone() {
                         if vv.is_mapping() {
                             match vv.as_mapping() {
@@ -134,7 +131,6 @@ pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
                                 None => (),
                             }
                         } else {
-                            println!("{} value {:?}", line!(), &value);
                             result = value.clone().and_then(|v| T::deserialize(v).ok());
                             value = None;
                         }
