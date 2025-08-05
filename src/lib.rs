@@ -20,7 +20,7 @@ mod tests {
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
-        let version = get::<String>("env.config.app.SSL.OUT.hhff".to_string());
+        let version = get::<String>("env.config.app1.OUT".to_string());
         println!("{} {:?}", line!(), version);
     }
 }
