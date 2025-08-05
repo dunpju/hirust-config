@@ -20,7 +20,7 @@ mod tests {
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
-        let version = get::<String>("env.config.app1.OUT".to_string());
+        let version = get::<String>("env.config.app.SSL.OUT");
         println!("{} {:?}", line!(), version);
     }
 }
@@ -73,7 +73,7 @@ pub fn print(f: PrintFn) {
 }
 
 #[allow(unused)]
-pub fn get<'a, T: Deserialize<'a>>(key: String) -> Option<T> {
+pub fn get<'a, T: Deserialize<'a>>(key: &str) -> Option<T> {
     let mut result = None;
     if key.contains(".") {
         let keys = key.split(".").collect::<Vec<&str>>();
