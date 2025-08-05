@@ -16,7 +16,7 @@ mod tests {
     // cargo test run -- --show-output
     #[test]
     fn run() {
-        load_config("./env".to_string());
+        load_config("./env");
         print(|key, value| {
             println!("{:?}: {:?}", key, value);
         });
@@ -26,7 +26,7 @@ mod tests {
 }
 
 #[allow(unused)]
-pub fn load_config(config_dir: String) {
+pub fn load_config(config_dir: &str) {
     for entry in WalkDir::new(config_dir) {
         let entry = entry.unwrap();
         let file_path = entry.path();
