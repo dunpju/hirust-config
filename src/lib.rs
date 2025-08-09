@@ -32,7 +32,6 @@ pub fn load_config(config_dir: &str) {
         let file_name = file_path.file_name().and_then(|s| s.to_str()).unwrap();
         // 检查扩展名是否为".yaml"
         if file_path.is_file() && extension == Some("yaml") {
-            println!("{:?}", file_path);
             let mut keys: Vec<String> = vec![];
             for p in file_path.iter() {
                 if p.ne(".") {
