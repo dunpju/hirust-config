@@ -1,13 +1,10 @@
-use lazy_static::lazy_static;
 use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::fs;
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use walkdir::WalkDir;
 
-lazy_static! {
-    static ref CONFIG_COLLECT: Mutex<BTreeMap<String, BTreeMap<String, serde_yml::Value>>> = Mutex::new(BTreeMap::new());
-}
+static CONFIG_COLLECT: LazyLock<Mutex<BTreeMap<String, BTreeMap<String, serde_yml::Value>>>> = LazyLock::new(|| Mutex::new(BTreeMap::new()));
 
 #[cfg(test)]
 mod tests {
